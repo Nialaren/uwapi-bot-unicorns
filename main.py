@@ -116,10 +116,10 @@ class Bot:
                     for protoId in self.game.prototypes.all():
                         protoType = self.game.prototypes.type(protoId)
                         if protoType == uw.Prototype.Construction:
-                            protoName = self.game.prototypes.name(protoId).replace(' ', '_');
+                            protoName = self.game.prototypes.name(protoId).replace(' ', '_')
                             proto_dict[protoName] = protoId
                         elif protoType == uw.Prototype.Recipe:
-                            protoName = self.game.prototypes.name(protoId).replace(' ', '_');
+                            protoName = self.game.prototypes.name(protoId).replace(' ', '_')
                             proto_dict[protoName] = protoId
                     self.constructions.init(proto_dict)
                     self.recipes.init(proto_dict)
