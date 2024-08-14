@@ -1,7 +1,7 @@
 import os
 import random
 import uw
-from modules import EntityManager, Constructions, Recipes
+from modules import EntityManager, Constructions, Recipes, BuildOrder
 
 
 class Bot:
@@ -19,6 +19,9 @@ class Bot:
         self.constructions = Constructions()
         self.recipes = Recipes()
         self.is_constructing = False
+
+        self.build_order = []
+        self.previous_orders = {}
 
     def start(self):
         self.game.log_info("starting")
@@ -125,45 +128,42 @@ class Bot:
                     self.constructions.init(proto_dict)
                     self.recipes.init(proto_dict)
 
-            if not self.is_constructing:
-                for i in range(3):
-                    metalDeposit = self.entityManager.deposits['metal'][i]
-                    self.game.commands.command_place_construction(
-                        position=metalDeposit.Position.position,
-                        yaw=metalDeposit.Position.yaw,
-                        proto=self.constructions.drill
-                    )
-                for i in range(1, 3):
-                    print(i)
-                    metalDeposit = self.entityManager.deposits['metal'][i]
-                    possiblePossition = self.game.map.find_construction_placement(
-                        construction_prototype=self.constructions.factory,
-                        position=metalDeposit.Position.position,
-                    )
-                    if not self.game.map.test_construction_placement(construction_prototype=self.constructions.factory, position=possiblePossition):
-                        print('IMPOSSIBLE!')
-                    print('possible', possiblePossition)
-                    self.game.commands.command_place_construction(
-                        position=possiblePossition,
-                        proto=self.constructions.factory
-                    )
+                self.build_order = [
+                    [
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position, 10),
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position, 11),
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][2].Position.position, 12),
+                    ],
+                    [
+                        BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
+                            self.constructions.concrete_plant,
+                            self.previous_orders[10].position,
+                        )),
+                        BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
+                            self.constructions.factory,
+                            self.previous_orders[11].position,
+                        )),
+                        BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
+                            self.constructions.factory,
+                            self.previous_orders[12].position,
+                        )),
+                    ],
+                ]
 
-                metalDeposit = self.entityManager.deposits['metal'][0]
-                possiblePossition = self.game.map.find_construction_placement(
-                    self.constructions.concrete_plant,
-                    metalDeposit.Position.position,
-                )
-                self.game.commands.command_place_construction(
-                    position=possiblePossition,
-                    proto=self.constructions.concrete_plant
-                )
-                self.is_constructing = True
 
-                if self.step % 10 == 1:
-                    self.attack_nearest_enemies()
+            if len(self.build_order) > 0:
+                if all(order.is_built(self.game) for order in self.build_order[0]):
+                    self.build_order = self.build_order[1:]
+                else:
+                    for order in self.build_order[0]:
+                        order.build(self.game)
+                        self.previous_orders[order.id] = order
 
-                if self.step % 10 == 5:
-                    self.assign_random_recipes()
+            if self.step % 10 == 1:
+                self.attack_nearest_enemies()
+
+            # if self.step % 10 == 5:
+            #     self.assign_random_recipes()
 
         return update_callback
 
