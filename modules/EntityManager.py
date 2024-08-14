@@ -11,7 +11,7 @@ DEPOSIT_TYPES = [
     'aether',
     'oil',
     'crystals',
-];
+]
 
 class EntityManager:
 
@@ -30,13 +30,13 @@ class EntityManager:
         self.enemy_mains: list[Entity] = []
         self.game = game
         self.loaded = False
-    
+
     def processEntities(self):
         for entity in self.game.world.entities().values():
             if not entity.has('Proto'):
                 continue
 
-            prototype_id = int(entity.Proto.proto);
+            prototype_id = int(entity.Proto.proto)
             proto = self.game.prototypes.type(prototype_id)
             protoName = self.game.prototypes.name(prototype_id)
 
@@ -55,10 +55,10 @@ class EntityManager:
                     addToList(self.deposits, protoName.replace(' deposit', ''), entity)
             elif proto == Prototype.Construction:
                 addToList(self.constructions, protoName, entity)
-        
+
         # sort deposits by distance
         for depositType in DEPOSIT_TYPES:
-            sorted(self.deposits[depositType], key=lambda x: self.game.map.distance_estimate(
+            self.deposits[depositType] = sorted(self.deposits[depositType], key=lambda x: self.game.map.distance_estimate(
                 self.main_building.Position.position, x.Position.position
             ))
 
