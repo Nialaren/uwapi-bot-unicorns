@@ -1,7 +1,7 @@
 import os
 import random
 import uw
-from modules import EntityManager, Constructions, Recipes, BuildOrder, ConstructionUnit, Units, command_units
+from modules import EntityManager, Constructions, Recipes, BuildOrder, ConstructionUnit, Units, UnitComands
 
 
 class Bot:
@@ -20,6 +20,8 @@ class Bot:
         self.recipes = Recipes()
         self.units = Units()
         self.construction_units = ConstructionUnit()
+
+        self.command_center = UnitComands(self.game)
 
         self.build_order = []
         self.previous_orders = {}
@@ -41,39 +43,7 @@ class Bot:
                 self.game.connect_new_server()
         self.game.log_info("done")
 
-    def attack_nearest_enemies(self):
-        own_units = [
-            e
-            for e in self.game.world.entities().values()
-            if e.own()
-            and e.has("Unit")
-            and self.game.prototypes.unit(e.Proto.proto)
-            and self.game.prototypes.unit(e.Proto.proto).get("dps", 0) > 0
-        ]
-        if not own_units:
-            return
-
-        enemy_units = [
-            e
-            for e in self.game.world.entities().values()
-            if e.policy() == uw.Policy.Enemy and e.has("Unit")
-        ]
-        if not enemy_units:
-            return
-
-        for u in own_units:
-            _id = u.Id
-            pos = u.Position.position
-            if len(self.game.commands.orders(_id)) == 0:
-                enemy = sorted(
-                    enemy_units,
-                    key=lambda x: self.game.map.distance_estimate(
-                        pos, x.Position.position
-                    ),
-                )[0]
-                self.game.commands.order(
-                    _id, self.game.commands.fight_to_entity(enemy.Id)
-                )
+    
 
     def assign_random_recipes(self):
         for e in self.game.world.entities().values():
@@ -114,8 +84,6 @@ class Bot:
                 self.entityManager.processEntities()
 
                 # Prepare prototype dict
-
-
                 if not self.constructions.is_initialized():
                     proto_dict = {}
                     unit_dict = {}
@@ -168,7 +136,13 @@ class Bot:
                     ],
                 ]
 
-            command_units(self.game, self.units, self.construction_units, self.recipes)
+            # COMMAND CENTER
+            if not self.command_center.is_initialized():
+                self.command_center.init(
+                    self.units,
+                    self.construction_units,
+                    self.recipes,
+                )
 
             if len(self.build_order) > 0:
                 done = []
@@ -192,7 +166,7 @@ class Bot:
 
 
             if self.step % 10 == 1:
-                self.attack_nearest_enemies()
+                self.command_center.command_units()
 
             # if self.step % 10 == 5:
             #     self.assign_random_recipes()
