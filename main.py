@@ -9,7 +9,11 @@ class Bot:
         self.step = 0
 
         # register update callback
+        self.game.add_connection_state_callback(self.connection_state_callback_closure())
+        self.game.add_game_state_callback(self.game_state_callback_closure())
+        self.game.add_map_state_callback(self.map_state_callback_closure())
         self.game.add_update_callback(self.update_callback_closure())
+        self.game.add_shooting_callback(self.shooting_callback_closure())
 
     def start(self):
         self.game.log_info("starting")
@@ -73,6 +77,24 @@ class Bot:
             if len(recipes) > 0:
                 self.game.commands.command_set_recipe(e.Id, random.choice(recipes))
 
+    def connection_state_callback_closure(self):
+        def connection_state_callback(state: uw.ConnectionState):
+            ...
+
+        return connection_state_callback
+
+    def game_state_callback_closure(self):
+        def game_state_callback(state: uw.GameState):
+            ...
+
+        return game_state_callback
+
+    def map_state_callback_closure(self):
+        def map_state_callback(state: uw.MapState):
+            ...
+
+        return map_state_callback
+
     def update_callback_closure(self):
         def update_callback(stepping):
             if not stepping:
@@ -86,6 +108,12 @@ class Bot:
                 self.assign_random_recipes()
 
         return update_callback
+
+    def shooting_callback_closure(self):
+        def shooting_callback(state: list[uw.ShootingData]):
+            ...
+
+        return shooting_callback
 
 
 if __name__ == "__main__":
