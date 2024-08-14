@@ -1,6 +1,7 @@
 import os
 import random
 import uw
+from modules import EntityManager
 
 
 class Bot:
@@ -14,6 +15,7 @@ class Bot:
         self.game.add_map_state_callback(self.map_state_callback_closure())
         self.game.add_update_callback(self.update_callback_closure())
         self.game.add_shooting_callback(self.shooting_callback_closure())
+        self.entityManager = EntityManager(self.game)
 
     def start(self):
         self.game.log_info("starting")
@@ -99,6 +101,9 @@ class Bot:
         def update_callback(stepping):
             if not stepping:
                 return
+            
+            if not self.entityManager.loaded:
+                self.entityManager.processEntities()
             self.step += 1  # save some cpu cycles by splitting work over multiple steps
 
             if self.step % 10 == 1:
