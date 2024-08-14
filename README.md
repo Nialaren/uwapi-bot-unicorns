@@ -27,3 +27,8 @@ Running with a lobby id:
 ```bash
 UNNATURAL_CONNECT_LOBBY=123456789 python3 main.py
 ```
+
+fish env for dedicated graphic card
+```
+env __GLX_VENDOR_LIBRARY_NAME=nvidia __NV_PRIME_RENDER_OFFLOAD=1
+```
