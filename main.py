@@ -111,7 +111,7 @@ class Bot:
 
                 # Prepare prototype dict
 
-                
+
                 if not self.constructions.is_initialized():
                     proto_dict = {}
                     for protoId in self.game.prototypes.all():
@@ -131,31 +131,31 @@ class Bot:
                     self.game.commands.command_place_construction(
                         position=metalDeposit.Position.position,
                         yaw=metalDeposit.Position.yaw,
-                        proto=self.constructions.drill()
+                        proto=self.constructions.drill
                     )
                 for i in range(1, 3):
                     print(i)
                     metalDeposit = self.entityManager.deposits['metal'][i]
                     possiblePossition = self.game.map.find_construction_placement(
-                        construction_prototype=self.constructions.factory(),
+                        construction_prototype=self.constructions.factory,
                         position=metalDeposit.Position.position,
                     )
-                    if not self.game.map.test_construction_placement(construction_prototype=self.constructions.factory(), position=possiblePossition):
+                    if not self.game.map.test_construction_placement(construction_prototype=self.constructions.factory, position=possiblePossition):
                         print('IMPOSSIBLE!')
                     print('possible', possiblePossition)
                     self.game.commands.command_place_construction(
                         position=possiblePossition,
-                        proto=self.constructions.factory()
+                        proto=self.constructions.factory
                     )
-                
+
                 metalDeposit = self.entityManager.deposits['metal'][0]
                 possiblePossition = self.game.map.find_construction_placement(
-                    self.constructions.concrete_plant(),
+                    self.constructions.concrete_plant,
                     metalDeposit.Position.position,
                 )
                 self.game.commands.command_place_construction(
                     position=possiblePossition,
-                    proto=self.constructions.concrete_plant()
+                    proto=self.constructions.concrete_plant
                 )
                 self.is_constructing = True
 
