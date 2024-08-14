@@ -13,7 +13,8 @@ class Bot:
 
     def start(self):
         self.game.log_info("starting")
-        self.game.set_player_name("bot-py")
+        self.game.set_player_name("unicron")
+        self.game.set_player_color(0.95, 0.375, 0.75)
         if not self.game.try_reconnect():
             self.game.set_start_gui(True)
             lobby = os.environ.get("UNNATURAL_CONNECT_LOBBY", "")
