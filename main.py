@@ -111,7 +111,7 @@ class Bot:
                 # Prepare prototype dict
 
                 
-                if not self.protoId.is_initialized():
+                if not self.constructions.is_initialized():
                     proto_dict = {}
                     for protoId in self.game.prototypes.all():
                         protoType = self.game.prototypes.type(protoId)
@@ -128,7 +128,7 @@ class Bot:
                     self.game.commands.command_place_construction(
                         position=metalDepositEntity.Position.position,
                         yaw=metalDepositEntity.Position.yaw,
-                        proto=self.protoId.drill()
+                        proto=self.constructions.drill()
                     )
 
                 self.game.commands.command_set_recipe()
