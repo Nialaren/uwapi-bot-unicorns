@@ -1,7 +1,7 @@
 import os
 import random
 import uw
-from modules import EntityManager, Constructions, Recipes, BuildOrder
+from modules import EntityManager, Constructions, Recipes, BuildOrder, ConstructionUnit, Units, command_units
 
 
 class Bot:
@@ -18,7 +18,8 @@ class Bot:
         self.entityManager = EntityManager(self.game)
         self.constructions = Constructions()
         self.recipes = Recipes()
-        self.is_constructing = False
+        self.units = Units()
+        self.construction_units = ConstructionUnit()
 
         self.build_order = []
         self.previous_orders = {}
@@ -117,6 +118,7 @@ class Bot:
 
                 if not self.constructions.is_initialized():
                     proto_dict = {}
+                    unit_dict = {}
                     for protoId in self.game.prototypes.all():
                         protoType = self.game.prototypes.type(protoId)
                         if protoType == uw.Prototype.Construction:
@@ -125,8 +127,15 @@ class Bot:
                         elif protoType == uw.Prototype.Recipe:
                             protoName = self.game.prototypes.name(protoId).replace(' ', '_')
                             proto_dict[protoName] = protoId
+                        elif protoType == uw.Prototype.Unit:
+                            protoName = self.game.prototypes.name(protoId).replace(' ', '_')
+                            unit_dict[protoName] = protoId
+
+
                     self.constructions.init(proto_dict)
                     self.recipes.init(proto_dict)
+                    self.units.init(unit_dict)
+                    self.construction_units.init(unit_dict)
 
                 self.build_order = [
                     [
@@ -150,6 +159,7 @@ class Bot:
                     ],
                 ]
 
+            command_units(self.game, self.units, self.construction_units, self.recipes)
 
             if len(self.build_order) > 0:
                 if all(order.is_built(self.game) for order in self.build_order[0]):
