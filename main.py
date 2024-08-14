@@ -1,7 +1,7 @@
 import os
 import random
 import uw
-from modules import EntityManager
+from modules import EntityManager, Constructions, Recipes
 
 
 class Bot:
@@ -16,6 +16,8 @@ class Bot:
         self.game.add_update_callback(self.update_callback_closure())
         self.game.add_shooting_callback(self.shooting_callback_closure())
         self.entityManager = EntityManager(self.game)
+        self.constructions = Constructions()
+        self.recipes = Recipes()
 
     def start(self):
         self.game.log_info("starting")
@@ -101,11 +103,35 @@ class Bot:
         def update_callback(stepping):
             if not stepping:
                 return
-            
-            if not self.entityManager.loaded:
-                self.entityManager.processEntities()
             self.step += 1  # save some cpu cycles by splitting work over multiple steps
 
+            if not self.entityManager.loaded:
+                self.entityManager.processEntities()
+
+                # Prepare prototype dict
+
+                
+                if not self.protoId.is_initialized():
+                    proto_dict = {}
+                    for protoId in self.game.prototypes.all():
+                        protoType = self.game.prototypes.type(protoId)
+                        if protoType == uw.Prototype.Construction:
+                            protoName = self.game.prototypes.name(protoId).replace(' ', '_');
+                            proto_dict[protoName] = protoId
+                        elif protoType == uw.Prototype.Recipe:
+                            protoName = self.game.prototypes.name(protoId).replace(' ', '_');
+                            proto_dict[protoName] = protoId
+                    self.constructions.init(proto_dict)
+                    self.recipes.init(proto_dict)
+
+                for metalDepositEntity in self.entityManager.deposits['metal']:
+                    self.game.commands.command_place_construction(
+                        position=metalDepositEntity.Position.position,
+                        yaw=metalDepositEntity.Position.yaw,
+                        proto=self.protoId.drill()
+                    )
+
+                self.game.commands.command_set_recipe()
             if self.step % 10 == 1:
                 self.attack_nearest_enemies()
 

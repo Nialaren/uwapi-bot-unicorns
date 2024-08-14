@@ -1,7 +1,7 @@
 from uw import Entity, Game, Prototype
 
 def addToList(obj: dict[str, list[Entity]], key, value):
-    if hasattr(obj, key):
+    if key in obj:
         obj[key].append(value)
     else:
         obj[key] = [value]
@@ -39,8 +39,6 @@ class EntityManager:
             prototype_id = int(entity.Proto.proto);
             proto = self.game.prototypes.type(prototype_id)
             protoName = self.game.prototypes.name(prototype_id)
-
-            print(proto, protoName)
 
             if proto == Prototype.Resource:
                 addToList(self.resources, protoName, entity)
