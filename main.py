@@ -18,6 +18,7 @@ class Bot:
         self.entityManager = EntityManager(self.game)
         self.constructions = Constructions()
         self.recipes = Recipes()
+        self.is_constructing = False
 
     def start(self):
         self.game.log_info("starting")
@@ -124,19 +125,45 @@ class Bot:
                     self.constructions.init(proto_dict)
                     self.recipes.init(proto_dict)
 
-                for metalDepositEntity in self.entityManager.deposits['metal']:
+            if not self.is_constructing:
+                for i in range(3):
+                    metalDeposit = self.entityManager.deposits['metal'][i]
                     self.game.commands.command_place_construction(
-                        position=metalDepositEntity.Position.position,
-                        yaw=metalDepositEntity.Position.yaw,
+                        position=metalDeposit.Position.position,
+                        yaw=metalDeposit.Position.yaw,
                         proto=self.constructions.drill()
                     )
+                for i in range(1, 3):
+                    print(i)
+                    metalDeposit = self.entityManager.deposits['metal'][i]
+                    possiblePossition = self.game.map.find_construction_placement(
+                        construction_prototype=self.constructions.factory(),
+                        position=metalDeposit.Position.position,
+                    )
+                    if not self.game.map.test_construction_placement(construction_prototype=self.constructions.factory(), position=possiblePossition):
+                        print('IMPOSSIBLE!')
+                    print('possible', possiblePossition)
+                    self.game.commands.command_place_construction(
+                        position=possiblePossition,
+                        proto=self.constructions.factory()
+                    )
+                
+                metalDeposit = self.entityManager.deposits['metal'][0]
+                possiblePossition = self.game.map.find_construction_placement(
+                    self.constructions.concrete_plant(),
+                    metalDeposit.Position.position,
+                )
+                self.game.commands.command_place_construction(
+                    position=possiblePossition,
+                    proto=self.constructions.concrete_plant()
+                )
+                self.is_constructing = True
 
-                self.game.commands.command_set_recipe()
-            if self.step % 10 == 1:
-                self.attack_nearest_enemies()
+                if self.step % 10 == 1:
+                    self.attack_nearest_enemies()
 
-            if self.step % 10 == 5:
-                self.assign_random_recipes()
+                if self.step % 10 == 5:
+                    self.assign_random_recipes()
 
         return update_callback
 
