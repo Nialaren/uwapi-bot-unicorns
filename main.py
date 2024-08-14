@@ -139,35 +139,57 @@ class Bot:
 
                 self.build_order = [
                     [
-                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position, 10),
-                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position, 11),
-                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][2].Position.position, 12),
-                    ],
-                    [
-                        BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
-                            self.constructions.concrete_plant,
-                            self.previous_orders[10].position,
-                        )),
-                        BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
-                            self.constructions.factory,
-                            self.previous_orders[11].position,
-                        )),
-                        BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
-                            self.constructions.factory,
-                            self.previous_orders[12].position,
-                        )),
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,
+                                   id=10,
+                                   deps=[
+                                        BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
+                                            self.constructions.concrete_plant,
+                                            self.previous_orders[10].position,
+                                        )),
+                                   ]),
+
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position,
+                                   id=11,
+                                   deps=[
+                                        BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
+                                            self.constructions.factory,
+                                            self.previous_orders[11].position,
+                                        )),
+                                   ]),
+
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][2].Position.position,
+                                   id=12,
+                                   deps=[
+                                        BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
+                                            self.constructions.factory,
+                                            self.previous_orders[12].position,
+                                        )),
+                                   ]),
                     ],
                 ]
 
             command_units(self.game, self.units, self.construction_units, self.recipes)
 
             if len(self.build_order) > 0:
-                if all(order.is_built(self.game) for order in self.build_order[0]):
-                    self.build_order = self.build_order[1:]
-                else:
-                    for order in self.build_order[0]:
+                done = []
+                add = []
+
+                for i, order in enumerate(self.build_order[0]):
+                    if order.is_built(self.game):
+                        done.append(i)
+                        if len(order.deps) > 0:
+                            add.extend(order.deps)
+                    else:
                         order.build(self.game)
                         self.previous_orders[order.id] = order
+
+                for i in reversed(done):
+                    self.build_order[0].pop(i)
+                self.build_order[0].extend(add)
+
+                if len(self.build_order[0]) == 0:
+                    self.build_order = self.build_order[1:]
+
 
             if self.step % 10 == 1:
                 self.attack_nearest_enemies()
