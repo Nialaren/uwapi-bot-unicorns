@@ -105,6 +105,44 @@ class Bot:
                     self.units.init(unit_dict)
                     self.construction_units.init(unit_dict)
 
+                # Kitsune rush
+                # self.build_order = [
+                #     [
+                #         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,
+                #                    id=10,
+                #                    deps=[
+                #                         BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
+                #                             self.constructions.concrete_plant,
+                #                             self.previous_orders[10].position,
+                #                         ), deps=[
+                #                             BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
+                #                                 self.constructions.factory,
+                #                                 self.previous_orders[10].position,
+                #                             )),
+                #                         ]),
+                #                    ]),
+
+                #         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position,
+                #                    id=11,
+                #                    deps=[
+                #                         BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
+                #                             self.constructions.factory,
+                #                             self.previous_orders[11].position,
+                #                         )),
+                #                    ]),
+
+                #         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][2].Position.position,
+                #                    id=12,
+                #                    deps=[
+                #                         BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
+                #                             self.constructions.factory,
+                #                             self.previous_orders[12].position,
+                #                         )),
+                #                    ]),
+                #     ],
+                # ]
+            
+                # Twinfire rush
                 self.build_order = [
                     [
                         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,
@@ -113,28 +151,28 @@ class Bot:
                                         BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
                                             self.constructions.concrete_plant,
                                             self.previous_orders[10].position,
-                                        ), deps=[
-                                            BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
-                                                self.constructions.factory,
-                                                self.previous_orders[10].position,
-                                            )),
-                                        ]),
+                                        )),
                                    ]),
 
                         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position,
                                    id=11,
                                    deps=[
-                                        BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
-                                            self.constructions.factory,
+                                        BuildOrder(self.constructions.forgepress, lambda: self.game.map.find_construction_placement(
+                                            self.constructions.forgepress,
                                             self.previous_orders[11].position,
-                                        )),
+                                        ), deps=[
+                                            BuildOrder(self.constructions.vehicle_assembler, lambda: self.game.map.find_construction_placement(
+                                                self.constructions.vehicle_assembler,
+                                                self.previous_orders[11].position,
+                                            ))
+                                        ]),
                                    ]),
 
                         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][2].Position.position,
                                    id=12,
                                    deps=[
-                                        BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
-                                            self.constructions.factory,
+                                        BuildOrder(self.constructions.arsenal, lambda: self.game.map.find_construction_placement(
+                                            self.constructions.arsenal,
                                             self.previous_orders[12].position,
                                         )),
                                    ]),
@@ -169,9 +207,8 @@ class Bot:
                 if len(self.build_order[0]) == 0:
                     self.build_order = self.build_order[1:]
 
-
             if self.step % 10 == 1:
-                self.command_center.command_units()
+                self.command_center.twinfire_strategy()
 
             # if self.step % 10 == 5:
             #     self.assign_random_recipes()
