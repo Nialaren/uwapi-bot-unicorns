@@ -106,6 +106,7 @@ class Bot:
                     self.construction_units.init(unit_dict)
 
                 # Kitsune rush
+                # Pridanim dalsich tovaren muzem mit produkci az dvojnasobnou. tzn v dobe kdy mel darik 1x juggernauta, my uz mohli mit cca 35 kitsune
                 # self.build_order = [
                 #     [
                 #         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,
@@ -143,6 +144,8 @@ class Bot:
                 # ]
             
                 # Twinfire rush
+                # potencial in 2:22 - 4 twinfires. Darik ma prvniho juggernauta az 3:45 - moznost rushe
+                # Ted je nastaveno na 4 jednotky
                 self.build_order = [
                     [
                         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,

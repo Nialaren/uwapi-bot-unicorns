@@ -92,10 +92,12 @@ class UnitComands:
             if not proto_type == uw.Prototype.Unit:
                 continue
 
+            entity_unit = self.game.prototypes.unit(proto_id)
             
-            if self.game.prototypes.unit(proto_id).get('dps', 0) > 0:
-                # fight unit
-                attack_unist.append(ownEntity)
+            if entity_unit is not None and entity_unit.get('dps', 0) > 0:
+                if len(entity_unit.get('speeds', {})) > 0:
+                    # fight unit
+                    attack_unist.append(ownEntity)
             elif ownEntity.Proto.proto == self.construction_units_map.factory:
                 self.game.commands.command_set_recipe(ownEntity.Id, self.recipes_map.kitsune)
                 factory_units.append(ownEntity)
@@ -108,7 +110,7 @@ class UnitComands:
             elif ownEntity.Proto.proto == self.construction_units_map.vehicle_assembler:
                 vehicle_asembler_units.append(ownEntity)
         
-        if len(attack_unist) > 5:
+        if len(attack_unist) > 3:
             for unit in attack_unist:
                 self.attack_nearest_enemies(unit, enemy_units)
 
