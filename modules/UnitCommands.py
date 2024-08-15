@@ -118,7 +118,7 @@ class UnitComands:
         for unit in attack_unist:
             if self.group_size(unit, attack_unist, group_radius) >= 10:
                 self.attack_nearest_enemies(unit, enemy_units)
-            elif len(self.nearby_units(unit, enemy_units, 100)) > 0:
+            elif len(self.nearby_units(unit, enemy_units, 200)) > 0:
                 self.attack_nearest_enemies(unit, enemy_units)
             else:
                 self.regroup(unit, attack_unist, group_radius)
