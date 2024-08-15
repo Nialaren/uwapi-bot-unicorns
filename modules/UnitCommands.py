@@ -1,16 +1,19 @@
 import uw
 from .ProtoId import ConstructionUnit, Units, Recipes
+from modules import EntityManager
 
 
 class UnitComands:
     def __init__(
         self,
         game: uw.Game,
-        
+        entity_manager: EntityManager
+
     ) -> None:
         self.game: uw.Game = game
+        self.entity_manager = entity_manager
         self._initialized = False
-    
+
     def init(
         self,
         units_map: Units,
@@ -53,19 +56,19 @@ class UnitComands:
 
             if ownEntity.Proto.proto == self.construction_units_map.concrete_plant:
                 concrete_units.append(ownEntity)
-            
+
             if self.game.prototypes.unit(proto_id).get('dps', 0) > 0:
                 # fight unit
                 attack_unist.append(ownEntity)
-        
+
         if len(attack_unist) > 20:
             for unit in attack_unist:
                 self.attack_nearest_enemies(unit, enemy_units)
 
         if len(factory_units) >= 3:
             for concrete_factory in concrete_units:
-                self.game.commands.command_set_priority(concrete_factory.Id, 0) 
-                
+                self.game.commands.command_set_priority(concrete_factory.Id, 0)
+
 
     def twinfire_strategy(self):
         attack_unist: list[uw.Entity] = []
@@ -93,7 +96,7 @@ class UnitComands:
                 continue
 
             entity_unit = self.game.prototypes.unit(proto_id)
-            
+
             if entity_unit is not None and entity_unit.get('dps', 0) > 0:
                 if len(entity_unit.get('speeds', {})) > 0:
                     # fight unit
@@ -109,10 +112,16 @@ class UnitComands:
                 forgepress_units.append(ownEntity)
             elif ownEntity.Proto.proto == self.construction_units_map.vehicle_assembler:
                 vehicle_asembler_units.append(ownEntity)
-        
-        if len(attack_unist) > 3:
-            for unit in attack_unist:
+
+        group_radius = 75
+
+        for unit in attack_unist:
+            if self.group_size(unit, attack_unist, group_radius) >= 10:
                 self.attack_nearest_enemies(unit, enemy_units)
+            elif len(self.nearby_units(unit, enemy_units, 100)) > 0:
+                self.attack_nearest_enemies(unit, enemy_units)
+            else:
+                self.regroup(unit, attack_unist, group_radius)
 
         if len(forgepress_units) >= 0 and len(arsenal_units) > 0 and len(vehicle_asembler_units) > 0:
             for concrete_factory in concrete_units:
@@ -125,12 +134,54 @@ class UnitComands:
         if len(arsenal_units) > 0:
             for arsenal in arsenal_units:
                 self.game.commands.command_set_recipe(arsenal.Id, self.recipes_map.rail_gun)
-        
+
         if len(vehicle_asembler_units) > 0:
             for asembler in vehicle_asembler_units:
                 self.game.commands.command_set_recipe(asembler.Id, self.recipes_map.twinfire)
 
+    def group_size(self, unit: uw.Entity, whitelist: list[uw.Entity], radius: float = 75) -> int:
+        if len(whitelist) == 0:
+            return 0
+
+        eids = [e.Id for e in whitelist]
+        return len(self.nearby_units(unit, whitelist, radius))
+
+    def nearby_units(self, unit: uw.Entity, whitelist: list[uw.Entity], radius: float = 75) -> list[uw.Entity]:
+        if len(whitelist) == 0:
+            return []
+
+        eids = [e.Id for e in whitelist]
+        area = self.game.map.area_extended(unit.Position.position, radius)
+        result = []
+        for position in area:
+            for id in self.game.map.entities(position):
+                if id in eids:
+                    result.append(self.game.world.entity(id))
+
+        return result
+
+    def regroup(self, unit: uw.Entity, friendly_units: list[uw.Entity], radius: float = 75):
+        target_id = self.entity_manager.main_building.Id
+
+        if len(friendly_units) > 0:
+            ignore = [e.Id for e in self.nearby_units(unit, friendly_units, radius)]
+            targets = [e for e in sorted(
+                friendly_units,
+                key=lambda x: self.game.map.distance_estimate(
+                    unit.Position.position, x.Position.position
+                ),
+            ) if e.Id not in ignore]
+
+            if len(targets) > 0:
+                target_id = targets[0].Id
+
+        self.game.commands.order(unit.Id, self.game.commands.run_to_entity(target_id))
+
+
     def attack_nearest_enemies(self, unit: uw.Entity, enemy_units: list[uw.Entity]):
+        if len(enemy_units) == 0:
+            return
+
         _id = unit.Id
         pos = unit.Position.position
 
@@ -145,14 +196,13 @@ class UnitComands:
 
         if len(target_units) == 0:
             target_units = enemy_units
-        
-        if len(self.game.commands.orders(_id)) == 0:
-            enemy = sorted(
-                target_units,
-                key=lambda x: self.game.map.distance_estimate(
-                    pos, x.Position.position
-                ),
-            )[0]
-            self.game.commands.order(
-                _id, self.game.commands.fight_to_entity(enemy.Id)
-            )
+
+        enemy = sorted(
+            target_units,
+            key=lambda x: self.game.map.distance_estimate(
+                pos, x.Position.position
+            ),
+        )[0]
+        self.game.commands.order(
+            _id, self.game.commands.fight_to_entity(enemy.Id)
+        )

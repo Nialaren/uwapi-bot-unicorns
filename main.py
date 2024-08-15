@@ -21,7 +21,7 @@ class Bot:
         self.units = Units()
         self.construction_units = ConstructionUnit()
 
-        self.command_center = UnitComands(self.game)
+        self.command_center = UnitComands(self.game, self.entityManager)
 
         self.build_order = []
         self.previous_orders = {}
@@ -43,7 +43,7 @@ class Bot:
                 self.game.connect_new_server()
         self.game.log_info("done")
 
-    
+
 
     def assign_random_recipes(self):
         for e in self.game.world.entities().values():
@@ -142,10 +142,11 @@ class Bot:
                 #                    ]),
                 #     ],
                 # ]
-            
+
                 # Twinfire rush
                 # potencial in 2:22 - 4 twinfires. Darik ma prvniho juggernauta az 3:45 - moznost rushe
                 # Ted je nastaveno na 4 jednotky
+                # TODO build order spíš nahradit něčím chytřejším, co se bude dívat, kde co má postavené, aby líp fungoval reconnect
                 self.build_order = [
                     [
                         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,
