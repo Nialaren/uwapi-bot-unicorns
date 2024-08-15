@@ -51,7 +51,7 @@ class UnitComands:
                 # fight unit
                 attack_unist.append(ownEntity)
         
-        if len(attack_unist) > 10:
+        if len(attack_unist) > 20:
             for unit in attack_unist:
                 self.attack_nearest_enemies(unit, enemy_units)
                 

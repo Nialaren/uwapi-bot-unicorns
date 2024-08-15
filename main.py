@@ -38,7 +38,7 @@ class Bot:
             if lobby != "":
                 self.game.connect_lobby_id(lobby)
             elif addr != "" and port != "":
-                self.game.connect_direct(addr, port)
+                self.game.connect_direct(addr, int(port))
             else:
                 self.game.connect_new_server()
         self.game.log_info("done")
@@ -113,7 +113,12 @@ class Bot:
                                         BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
                                             self.constructions.concrete_plant,
                                             self.previous_orders[10].position,
-                                        )),
+                                        ), deps=[
+                                            BuildOrder(self.constructions.factory, lambda: self.game.map.find_construction_placement(
+                                                self.constructions.factory,
+                                                self.previous_orders[10].position,
+                                            )),
+                                        ]),
                                    ]),
 
                         BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position,
