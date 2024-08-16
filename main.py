@@ -211,7 +211,7 @@ class Bot:
                 if len(self.build_order[0]) == 0:
                     self.build_order = self.build_order[1:]
 
-            if self.step % 10 == 1:
+            if self.step % 50 == 1:
                 self.command_center.twinfire_strategy()
 
             # if self.step % 10 == 5:

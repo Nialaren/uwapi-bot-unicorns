@@ -132,7 +132,7 @@ class UnitComands:
             if len(self.nearby_units(unit, enemy_units, 500)) > 0:
                 group_radius = 75
 
-            if self.group_size(unit, attack_unist, group_radius) >= 10:
+            if self.group_size(unit, attack_unist, group_radius) >= 15:
                 self.attack_nearest_enemies(unit, enemy_units)
             elif len(self.nearby_units(unit, enemy_units, 300)) > 0:
                 self.attack_nearest_enemies(unit, enemy_units)
@@ -159,14 +159,13 @@ class UnitComands:
         if len(whitelist) == 0:
             return 0
 
-        eids = [e.Id for e in whitelist]
         return len(self.nearby_units(unit, whitelist, radius))
 
     def nearby_units(self, unit: uw.Entity, whitelist: list[uw.Entity], radius: float = 75) -> list[uw.Entity]:
         if len(whitelist) == 0:
             return []
 
-        eids = [e.Id for e in whitelist]
+        eids = {e.Id for e in whitelist}
         area = self.game.map.area_extended(unit.Position.position, radius)
         result = []
         for position in area:
@@ -180,7 +179,7 @@ class UnitComands:
         target_id = self.entity_manager.main_building.Id
 
         if len(friendly_units) > 0:
-            ignore = [e.Id for e in self.nearby_units(unit, friendly_units, radius)]
+            ignore = {e.Id for e in self.nearby_units(unit, friendly_units, radius)}
             targets = [e for e in sorted(
                 friendly_units,
                 key=lambda x: self.game.map.distance_estimate(
@@ -223,20 +222,20 @@ class UnitComands:
             ),
         )[0]
 
-        nearest_dist = self.game.map.distance_estimate(
-            pos, enemy.Position.position
+        # nearest_dist = self.game.map.distance_estimate(
+        #     pos, enemy.Position.position
+        # )
+
+        # orders = self.game.commands.orders(_id)
+        # order_dist = 0
+        # for order in orders:
+        #     if order.order_type == uw.OrderType.Fight and order.entity != uw.Commands.invalid:
+        #         order_dist = self.game.map.distance_estimate(
+        #             self.game.world.entity(order.entity).Position.position, enemy.Position.position
+        #         )
+        #         break
+
+        # if nearest_dist < 200 or order_dist < 100:
+        self.game.commands.order(
+            _id, self.game.commands.fight_to_entity(enemy.Id)
         )
-
-        orders = self.game.commands.orders(_id)
-        order_dist = 0
-        for order in orders:
-            if order.order_type == uw.OrderType.Fight and order.entity != uw.Commands.invalid:
-                order_dist = self.game.map.distance_estimate(
-                    self.game.world.entity(order.entity).Position.position, enemy.Position.position
-                )
-                break
-
-        if nearest_dist < 200 or order_dist < 100:
-            self.game.commands.order(
-                _id, self.game.commands.fight_to_entity(enemy.Id)
-            )
