@@ -222,6 +222,21 @@ class UnitComands:
                 pos, x.Position.position
             ),
         )[0]
-        self.game.commands.order(
-            _id, self.game.commands.fight_to_entity(enemy.Id)
+
+        nearest_dist = self.game.map.distance_estimate(
+            pos, enemy.Position.position
         )
+
+        orders = self.game.commands.orders(_id)
+        order_dist = 0
+        for order in orders:
+            if order.order_type == uw.OrderType.Fight and order.entity != uw.Commands.invalid:
+                order_dist = self.game.map.distance_estimate(
+                    self.game.world.entity(order.entity).Position.position, enemy.Position.position
+                )
+                break
+
+        if nearest_dist < 200 or order_dist < 100:
+            self.game.commands.order(
+                _id, self.game.commands.fight_to_entity(enemy.Id)
+            )
