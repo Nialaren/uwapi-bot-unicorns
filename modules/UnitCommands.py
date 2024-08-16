@@ -33,10 +33,11 @@ class UnitComands:
         self.recipes_map: Recipes = recipes_map
         self._initialized = True
         self.main_building_id = None
+        self._created_units: dict[int, int] = {}
 
     def is_initialized(self):
         return self._initialized
-
+    
     def kitsune_strategy(self):
         attack_unist: list[uw.Entity] = []
         enemy_units: list[uw.Entity] = []
@@ -139,12 +140,27 @@ class UnitComands:
 
         enemy_whitelist_ids = {e.Id for e in enemy_units}
         attack_unist_ids = {e.Id for e in attack_unist}
+        dict_len = len(self._created_units)
+
         for unit in attack_unist:
+            group_size = self._created_units.get(unit.Id, None)
+
+            if group_size is None:
+                if dict_len <3:
+                    group_size = 2
+                elif dict_len < 25:
+                    group_size = 10
+                else:
+                    group_size = 15
+                
+                if group_size < 15:
+                    self._created_units[unit.Id] = group_size
+            
             group_radius = 200
             if len(self.nearby_units(unit, enemy_whitelist_ids, 500)) > 0:
                 group_radius = 75
 
-            if self.group_size(unit, attack_unist_ids, group_radius) >= 15:
+            if self.group_size(unit, attack_unist_ids, group_radius) >= group_size:
                 self.attack_nearest_enemies(unit, enemy_units)
             elif len(self.nearby_units(unit, enemy_whitelist_ids, 300)) > 0:
                 self.attack_nearest_enemies(unit, enemy_units)
