@@ -180,7 +180,7 @@ class Bot:
                                    ]),
                     ],
                 ]
-            else:
+            elif self.step % 40:
                 self.entityManager.update_entities()
 
             # COMMAND CENTER
