@@ -1,6 +1,14 @@
 import uw
 from .ProtoId import ConstructionUnit, Units, Recipes
 from modules import EntityManager
+from enum import Flag
+
+
+class ForceStateFlags(Flag):
+   NONE = 0
+   Winner = 1 << 0
+   Defeated = 1 << 1
+   Disconnected = 1 << 2
 
 
 class UnitComands:
@@ -81,6 +89,12 @@ class UnitComands:
 
         for entity in self.game.world.entities().values():
             if entity.policy() == uw.Policy.Enemy and entity.has('Unit'):
+                if entity.has('Owner'):
+                    force_state_flags = ForceStateFlags(self.game.world.entity(entity.Owner.force).Force.state)
+                    if ForceStateFlags.Defeated in force_state_flags or ForceStateFlags.Disconnected in force_state_flags:
+                        # enemy is defeated, ignore them
+                        continue
+
                 enemy_units.append(entity)
                 continue
 
@@ -118,7 +132,7 @@ class UnitComands:
         for unit in attack_unist:
             if self.group_size(unit, attack_unist, group_radius) >= 10:
                 self.attack_nearest_enemies(unit, enemy_units)
-            elif len(self.nearby_units(unit, enemy_units, 200)) > 0:
+            elif len(self.nearby_units(unit, enemy_units, 300)) > 0:
                 self.attack_nearest_enemies(unit, enemy_units)
             else:
                 self.regroup(unit, attack_unist, group_radius)
@@ -192,7 +206,10 @@ class UnitComands:
             if enemy_unit is not None and len(enemy_unit.get('speeds', {})) > 0:
                 moving_units.append(enemy)
 
-        target_units = moving_units
+        target_units = [e for e in moving_units if self.game.map.distance_estimate(
+            unit.Position.position,
+            e.Position.position,
+        ) < 200]
 
         if len(target_units) == 0:
             target_units = enemy_units
