@@ -160,7 +160,7 @@ class Bot:
                                                                 ), id=51, deps=[
                                                                     BuildOrder(self.constructions.vehicle_assembler, lambda: self.game.map.find_construction_placement(
                                                                         self.constructions.vehicle_assembler,
-                                                                        self.previous_orders[51].position,
+                                                                        self.previous_orders[31].position,
                                                                     )),
                                                                 ]),
                                                                 
@@ -254,15 +254,15 @@ class Bot:
                 # potencial in 2:22 - 4 twinfires. Darik ma prvniho juggernauta az 3:45 - moznost rushe
                 # Ted je nastaveno na 4 jednotky
                 # TODO build order spíš nahradit něčím chytřejším, co se bude dívat, kde co má postavené, aby líp fungoval reconnect
-                # self.build_order = self.expansion_build_order()
-                self.build_order =  [
-                    [
-                        BuildOrder(self.constructions.vehicle_assembler, lambda:  self.game.map.find_construction_placement(
-                                    self.constructions.vehicle_assembler,
-                                    self.entityManager.deposits['metal'][0].Position.position,
-                        )),
-                    ]
-                ]
+                self.build_order = self.expansion_build_order()
+                # self.build_order =  [
+                #     [
+                #         BuildOrder(self.constructions.vehicle_assembler, lambda:  self.game.map.find_construction_placement(
+                #                     self.constructions.vehicle_assembler,
+                #                     self.entityManager.deposits['metal'][0].Position.position,
+                #         )),
+                #     ]
+                # ]
             # elif self.step % 40:
                 # self.entityManager.update_entities()
 

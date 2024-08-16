@@ -32,6 +32,7 @@ class UnitComands:
         self.construction_units_map: ConstructionUnit = construction_units_map
         self.recipes_map: Recipes = recipes_map
         self._initialized = True
+        self.main_building_id = None
 
     def is_initialized(self):
         return self._initialized
@@ -99,11 +100,19 @@ class UnitComands:
                 enemy_units.append(entity)
                 continue
 
-            if not (entity.own() and entity.has('Proto')):
+            if not entity.own():
+                continue
+            
+            proto_id = int(entity.Proto.proto)
+            proto_name = self.game.prototypes.name(proto_id)
+
+            if 'nucleus' in proto_name:
+                self.main_buildihng_id = entity.Id
+
+            if not entity.has('Proto'):
                 continue
 
             ownEntity: uw.Entity = entity
-            proto_id = int(ownEntity.Proto.proto)
 
             proto_type = self.game.prototypes.type(proto_id)
 
@@ -154,16 +163,16 @@ class UnitComands:
             for arsenal in arsenal_units:
                 self.game.commands.command_set_recipe(arsenal.Id, self.recipes_map.rail_gun)
 
-        # if len(vehicle_asembler_units) > 0:
-        #     for asembler in vehicle_asembler_units:
-        #         self.game.commands.command_set_recipe(asembler.Id, self.recipes_map.twinfire)
-
         if len(vehicle_asembler_units) > 0:
-            for i in range(0, len(vehicle_asembler_units)):
-                asembler = vehicle_asembler_units[i]
-                if i == 1:
-                    self.game.commands.command_set_priority(asembler.Id, 0)
+            for asembler in vehicle_asembler_units:
                 self.game.commands.command_set_recipe(asembler.Id, self.recipes_map.twinfire)
+
+        # if len(vehicle_asembler_units) > 0:
+        #     for i in range(0, len(vehicle_asembler_units)):
+        #         asembler = vehicle_asembler_units[i]
+        #         if i == 1:
+        #             self.game.commands.command_set_priority(asembler.Id, 0)
+        #         self.game.commands.command_set_recipe(asembler.Id, self.recipes_map.twinfire)
 
     def group_size(self, unit: uw.Entity, whitelist: set[int], radius: float = 75) -> int:
         if len(whitelist) == 0:
@@ -185,7 +194,7 @@ class UnitComands:
         return result
 
     def regroup(self, unit: uw.Entity, friendly_units: list[uw.Entity], radius: float = 75):
-        target_id = self.entity_manager.main_building.Id
+        target_id = self.main_building_id
 
         friendly_ids = {e.Id for e in friendly_units}
         if len(friendly_units) > 0:
@@ -199,6 +208,9 @@ class UnitComands:
 
             if len(targets) > 0:
                 target_id = targets[0].Id
+        
+        if target_id is None:
+            return
 
         self.game.commands.order(unit.Id, self.game.commands.run_to_entity(target_id))
 
