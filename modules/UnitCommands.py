@@ -127,9 +127,11 @@ class UnitComands:
             elif ownEntity.Proto.proto == self.construction_units_map.vehicle_assembler:
                 vehicle_asembler_units.append(ownEntity)
 
-        group_radius = 75
-
         for unit in attack_unist:
+            group_radius = 200
+            if len(self.nearby_units(unit, enemy_units, 500)) > 0:
+                group_radius = 75
+
             if self.group_size(unit, attack_unist, group_radius) >= 10:
                 self.attack_nearest_enemies(unit, enemy_units)
             elif len(self.nearby_units(unit, enemy_units, 300)) > 0:
