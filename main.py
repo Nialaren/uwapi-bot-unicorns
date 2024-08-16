@@ -73,6 +73,115 @@ class Bot:
             ...
 
         return map_state_callback
+    
+    def basic_build_order(self):
+        return [
+            [
+                BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,
+                            id=10,
+                            deps=[
+                                BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
+                                    self.constructions.concrete_plant,
+                                    self.previous_orders[10].position,
+                                )),
+                            ]),
+
+                BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position,
+                            id=11,
+                            deps=[
+                                BuildOrder(self.constructions.forgepress, lambda: self.game.map.find_construction_placement(
+                                    self.constructions.forgepress,
+                                    self.previous_orders[11].position,
+                                ), deps=[
+                                    BuildOrder(self.constructions.vehicle_assembler, lambda: self.game.map.find_construction_placement(
+                                        self.constructions.vehicle_assembler,
+                                        self.previous_orders[11].position,
+                                    ))
+                                ]),
+                            ]),
+
+                BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][2].Position.position,
+                            id=12,
+                            deps=[
+                                BuildOrder(self.constructions.arsenal, lambda: self.game.map.find_construction_placement(
+                                    self.constructions.arsenal,
+                                    self.previous_orders[12].position,
+                                )),
+                            ]),
+            ],
+        ]
+
+    def expansion_build_order(self):
+        return [
+                    [
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,
+                                   id=10,
+                                   deps=[
+                                        BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
+                                            self.constructions.concrete_plant,
+                                            self.previous_orders[10].position,
+                                        )),
+                                   ]),
+
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position,
+                                   id=11,
+                                   deps=[
+                                        BuildOrder(self.constructions.forgepress, lambda: self.game.map.find_construction_placement(
+                                            self.constructions.forgepress,
+                                            self.previous_orders[11].position,
+                                        ), deps=[
+                                            BuildOrder(self.constructions.vehicle_assembler, lambda: self.game.map.find_construction_placement(
+                                                self.constructions.vehicle_assembler,
+                                                self.previous_orders[11].position,
+                                            )),
+                                            BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][3].Position.position,
+                                                id=31,
+                                                deps=[
+                                                    BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
+                                                        self.constructions.concrete_plant,
+                                                        self.previous_orders[31].position,
+                                                    ),
+                                                    deps=[
+                                                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][4].Position.position,
+                                                            id=41,
+                                                            deps=[
+                                                                BuildOrder(self.constructions.forgepress, lambda: self.game.map.find_construction_placement(
+                                                                    self.constructions.forgepress,
+                                                                    self.previous_orders[41].position,
+                                                                )),
+                                                            ]
+                                                        ),
+                                                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][5].Position.position,
+                                                            id=42,
+                                                            deps=[
+                                                                BuildOrder(self.constructions.arsenal, lambda: self.game.map.find_construction_placement(
+                                                                    self.constructions.arsenal,
+                                                                    self.previous_orders[42].position,
+                                                                ), id=51, deps=[
+                                                                    BuildOrder(self.constructions.vehicle_assembler, lambda: self.game.map.find_construction_placement(
+                                                                        self.constructions.vehicle_assembler,
+                                                                        self.previous_orders[51].position,
+                                                                    )),
+                                                                ]),
+                                                                
+                                                            ]
+                                                        ),
+                                                    ]),
+                                                ]
+                                            ),
+                                        ]),
+                                   ]),
+
+                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][2].Position.position,
+                                   id=12,
+                                   deps=[
+                                        BuildOrder(self.constructions.arsenal, lambda: self.game.map.find_construction_placement(
+                                            self.constructions.arsenal,
+                                            self.previous_orders[12].position,
+                                        )),
+                                   ]),
+                    ],
+                ]
 
     def update_callback_closure(self):
         def update_callback(stepping):
@@ -145,43 +254,9 @@ class Bot:
                 # potencial in 2:22 - 4 twinfires. Darik ma prvniho juggernauta az 3:45 - moznost rushe
                 # Ted je nastaveno na 4 jednotky
                 # TODO build order spíš nahradit něčím chytřejším, co se bude dívat, kde co má postavené, aby líp fungoval reconnect
-                self.build_order = [
-                    [
-                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][0].Position.position,
-                                   id=10,
-                                   deps=[
-                                        BuildOrder(self.constructions.concrete_plant, lambda: self.game.map.find_construction_placement(
-                                            self.constructions.concrete_plant,
-                                            self.previous_orders[10].position,
-                                        )),
-                                   ]),
-
-                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][1].Position.position,
-                                   id=11,
-                                   deps=[
-                                        BuildOrder(self.constructions.forgepress, lambda: self.game.map.find_construction_placement(
-                                            self.constructions.forgepress,
-                                            self.previous_orders[11].position,
-                                        ), deps=[
-                                            BuildOrder(self.constructions.vehicle_assembler, lambda: self.game.map.find_construction_placement(
-                                                self.constructions.vehicle_assembler,
-                                                self.previous_orders[11].position,
-                                            ))
-                                        ]),
-                                   ]),
-
-                        BuildOrder(self.constructions.drill, lambda: self.entityManager.deposits['metal'][2].Position.position,
-                                   id=12,
-                                   deps=[
-                                        BuildOrder(self.constructions.arsenal, lambda: self.game.map.find_construction_placement(
-                                            self.constructions.arsenal,
-                                            self.previous_orders[12].position,
-                                        )),
-                                   ]),
-                    ],
-                ]
-            elif self.step % 40:
-                self.entityManager.update_entities()
+                self.build_order = self.expansion_build_order()
+            # elif self.step % 40:
+                # self.entityManager.update_entities()
 
             # COMMAND CENTER
             if not self.command_center.is_initialized():
@@ -191,7 +266,8 @@ class Bot:
                     self.recipes,
                 )
 
-            if len(self.build_order) > 0:
+            build_order_len = len(self.build_order)
+            if build_order_len > 0:
                 done = []
                 add = []
 
@@ -212,7 +288,7 @@ class Bot:
                     self.build_order = self.build_order[1:]
 
             if self.step % 50 == 1:
-                self.command_center.twinfire_strategy()
+                self.command_center.twinfire_strategy(build_order_len == 0)
 
             # if self.step % 10 == 5:
             #     self.assign_random_recipes()

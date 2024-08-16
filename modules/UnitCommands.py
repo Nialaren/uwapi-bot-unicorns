@@ -79,6 +79,7 @@ class UnitComands:
 
 
     def twinfire_strategy(self, all_done = False):
+        disable_treshold = 1
         attack_unist: list[uw.Entity] = []
         enemy_units: list[uw.Entity] = []
         factory_units: list[uw.Entity] = []
@@ -141,7 +142,7 @@ class UnitComands:
             else:
                 self.regroup(unit, attack_unist, group_radius)
 
-        if len(forgepress_units) >= 0 and len(arsenal_units) > 0 and len(vehicle_asembler_units) > 0:
+        if len(forgepress_units) >= disable_treshold and len(arsenal_units) > disable_treshold and len(vehicle_asembler_units) > disable_treshold:
             for concrete_factory in concrete_units:
                 self.game.commands.command_set_priority(concrete_factory.Id, 0)
 
