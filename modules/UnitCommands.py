@@ -154,8 +154,15 @@ class UnitComands:
             for arsenal in arsenal_units:
                 self.game.commands.command_set_recipe(arsenal.Id, self.recipes_map.rail_gun)
 
+        # if len(vehicle_asembler_units) > 0:
+        #     for asembler in vehicle_asembler_units:
+        #         self.game.commands.command_set_recipe(asembler.Id, self.recipes_map.twinfire)
+
         if len(vehicle_asembler_units) > 0:
-            for asembler in vehicle_asembler_units:
+            for i in range(0, len(vehicle_asembler_units)):
+                asembler = vehicle_asembler_units[i]
+                if i == 1:
+                    self.game.commands.command_set_priority(asembler.Id, 0)
                 self.game.commands.command_set_recipe(asembler.Id, self.recipes_map.twinfire)
 
     def group_size(self, unit: uw.Entity, whitelist: set[int], radius: float = 75) -> int:
