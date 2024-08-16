@@ -78,7 +78,7 @@ class UnitComands:
                 self.game.commands.command_set_priority(concrete_factory.Id, 0)
 
 
-    def twinfire_strategy(self):
+    def twinfire_strategy(self, all_done = False):
         attack_unist: list[uw.Entity] = []
         enemy_units: list[uw.Entity] = []
         factory_units: list[uw.Entity] = []
@@ -127,14 +127,16 @@ class UnitComands:
             elif ownEntity.Proto.proto == self.construction_units_map.vehicle_assembler:
                 vehicle_asembler_units.append(ownEntity)
 
+        enemy_whitelist_ids = {e.Id for e in enemy_units}
+        attack_unist_ids = {e.Id for e in attack_unist}
         for unit in attack_unist:
             group_radius = 200
-            if len(self.nearby_units(unit, enemy_units, 500)) > 0:
+            if len(self.nearby_units(unit, enemy_whitelist_ids, 500)) > 0:
                 group_radius = 75
 
-            if self.group_size(unit, attack_unist, group_radius) >= 15:
+            if self.group_size(unit, attack_unist_ids, group_radius) >= 15:
                 self.attack_nearest_enemies(unit, enemy_units)
-            elif len(self.nearby_units(unit, enemy_units, 300)) > 0:
+            elif len(self.nearby_units(unit, enemy_whitelist_ids, 300)) > 0:
                 self.attack_nearest_enemies(unit, enemy_units)
             else:
                 self.regroup(unit, attack_unist, group_radius)
@@ -155,22 +157,21 @@ class UnitComands:
             for asembler in vehicle_asembler_units:
                 self.game.commands.command_set_recipe(asembler.Id, self.recipes_map.twinfire)
 
-    def group_size(self, unit: uw.Entity, whitelist: list[uw.Entity], radius: float = 75) -> int:
+    def group_size(self, unit: uw.Entity, whitelist: set[int], radius: float = 75) -> int:
         if len(whitelist) == 0:
             return 0
 
         return len(self.nearby_units(unit, whitelist, radius))
 
-    def nearby_units(self, unit: uw.Entity, whitelist: list[uw.Entity], radius: float = 75) -> list[uw.Entity]:
+    def nearby_units(self, unit: uw.Entity, whitelist: set[int], radius: float = 75) -> list[uw.Entity]:
         if len(whitelist) == 0:
             return []
 
-        eids = {e.Id for e in whitelist}
         area = self.game.map.area_extended(unit.Position.position, radius)
         result = []
         for position in area:
             for id in self.game.map.entities(position):
-                if id in eids:
+                if id in whitelist:
                     result.append(self.game.world.entity(id))
 
         return result
@@ -178,8 +179,9 @@ class UnitComands:
     def regroup(self, unit: uw.Entity, friendly_units: list[uw.Entity], radius: float = 75):
         target_id = self.entity_manager.main_building.Id
 
+        friendly_ids = {e.Id for e in friendly_units}
         if len(friendly_units) > 0:
-            ignore = {e.Id for e in self.nearby_units(unit, friendly_units, radius)}
+            ignore = {e.Id for e in self.nearby_units(unit, friendly_ids, radius)}
             targets = [e for e in sorted(
                 friendly_units,
                 key=lambda x: self.game.map.distance_estimate(
