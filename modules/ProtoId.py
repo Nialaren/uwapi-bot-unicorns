@@ -280,4 +280,73 @@ class Units:
     @property
     def colossus(self):
         return self._protoDict['colossus']
+    
+class Resources:
+    def __init__(self):
+        self._protoDict: dict[str, int] = {}
+        self.initialized = False
 
+    def init(self, data: dict[str, int]):
+        self._protoDict = data
+        self.initialized = True
+
+    def is_initialized(self):
+        return self.initialized
+    
+    @property
+    def metal(self):
+        return self._protoDict['metal']
+
+    @property
+    def aether(self):
+        return self._protoDict['aether']
+
+    @property
+    def oil(self):
+        return self._protoDict['oil']
+
+    @property
+    def crystals(self):
+        return self._protoDict['crystals']
+
+def get_construction_to_unit_map(constructions: Constructions, units: ConstructionUnit) -> dict[int, int]:
+    return {
+        constructions.experimental_assembler: units.experimental_assembler,
+        constructions.brick: units.brick,
+        constructions.drill: units.drill,
+        constructions.talos: units.talos,
+        constructions.forgepress: units.forgepress,
+        constructions.pump: units.pump,
+        constructions.laboratory: units.laboratory,
+        constructions.vehicle_assembler: units.vehicle_assembler,
+        constructions.generator: units.generator,
+        constructions.factory: units.factory,
+        constructions.blender: units.blender,
+        constructions.heimdall: units.heimdall,
+        constructions.arsenal: units.arsenal,
+        constructions.smelter: units.smelter,
+        constructions.bot_assembler: units.bot_assembler,
+        constructions.concrete_plant: units.concrete_plant,
+        constructions.thor: units.thor,
+    }
+    
+def get_unit_to_construction_map(constructions: Constructions, units: ConstructionUnit) -> dict[int, int]:
+    return {
+        units.experimental_assembler: constructions.experimental_assembler,
+        units.brick: constructions.brick,
+        units.drill: constructions.drill,
+        units.talos: constructions.talos,
+        units.forgepress: constructions.forgepress,
+        units.pump: constructions.pump,
+        units.laboratory: constructions.laboratory,
+        units.vehicle_assembler: constructions.vehicle_assembler,
+        units.generator: constructions.generator,
+        units.factory: constructions.factory,
+        units.blender: constructions.blender,
+        units.heimdall: constructions.heimdall,
+        units.arsenal: constructions.arsenal,
+        units.smelter: constructions.smelter,
+        units.bot_assembler: constructions.bot_assembler,
+        units.concrete_plant: constructions.concrete_plant,
+        units.thor: constructions.thor,
+    }

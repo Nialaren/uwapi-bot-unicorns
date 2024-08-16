@@ -15,7 +15,7 @@ class Bot:
         self.game.add_map_state_callback(self.map_state_callback_closure())
         self.game.add_update_callback(self.update_callback_closure())
         self.game.add_shooting_callback(self.shooting_callback_closure())
-        self.entityManager = EntityManager(self.game)
+        self.entityManager = EntityManager(self.game, self)
         self.constructions = Constructions()
         self.recipes = Recipes()
         self.units = Units()
@@ -80,31 +80,29 @@ class Bot:
                 return
             self.step += 1  # save some cpu cycles by splitting work over multiple steps
 
+            # Prepare prototype dict
+            if not self.constructions.is_initialized():
+                proto_dict = {}
+                unit_dict = {}
+                for protoId in self.game.prototypes.all():
+                    protoType = self.game.prototypes.type(protoId)
+                    if protoType == uw.Prototype.Construction:
+                        protoName = self.game.prototypes.name(protoId).replace(' ', '_')
+                        proto_dict[protoName] = protoId
+                    elif protoType == uw.Prototype.Recipe:
+                        protoName = self.game.prototypes.name(protoId).replace(' ', '_')
+                        proto_dict[protoName] = protoId
+                    elif protoType == uw.Prototype.Unit:
+                        protoName = self.game.prototypes.name(protoId).replace(' ', '_')
+                        unit_dict[protoName] = protoId
+
+                self.constructions.init(proto_dict)
+                self.recipes.init(proto_dict)
+                self.units.init(unit_dict)
+                self.construction_units.init(unit_dict)
+
             if not self.entityManager.loaded:
                 self.entityManager.processEntities()
-
-                # Prepare prototype dict
-                if not self.constructions.is_initialized():
-                    proto_dict = {}
-                    unit_dict = {}
-                    for protoId in self.game.prototypes.all():
-                        protoType = self.game.prototypes.type(protoId)
-                        if protoType == uw.Prototype.Construction:
-                            protoName = self.game.prototypes.name(protoId).replace(' ', '_')
-                            proto_dict[protoName] = protoId
-                        elif protoType == uw.Prototype.Recipe:
-                            protoName = self.game.prototypes.name(protoId).replace(' ', '_')
-                            proto_dict[protoName] = protoId
-                        elif protoType == uw.Prototype.Unit:
-                            protoName = self.game.prototypes.name(protoId).replace(' ', '_')
-                            unit_dict[protoName] = protoId
-
-
-                    self.constructions.init(proto_dict)
-                    self.recipes.init(proto_dict)
-                    self.units.init(unit_dict)
-                    self.construction_units.init(unit_dict)
-
                 # Kitsune rush
                 # Pridanim dalsich tovaren muzem mit produkci az dvojnasobnou. tzn v dobe kdy mel darik 1x juggernauta, my uz mohli mit cca 35 kitsune
                 # self.build_order = [
@@ -182,6 +180,8 @@ class Bot:
                                    ]),
                     ],
                 ]
+            else:
+                self.entityManager.update_entities()
 
             # COMMAND CENTER
             if not self.command_center.is_initialized():
