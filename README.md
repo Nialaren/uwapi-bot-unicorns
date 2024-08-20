@@ -1,4 +1,4 @@
-# Unicorns bot
+# Unicrons bot
 
 ## uwapi for python
 
